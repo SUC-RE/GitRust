@@ -1,17 +1,14 @@
-use axum::{extract::State, response::Html, routing::get, Router};
+use axum::{Router, routing::get};
+use gitrust::activity::handlers::dashboard_feed;
 use gitrust::auth::routes::auth_routes;
 use gitrust::config::Config;
 use gitrust::state::AppState;
-use minijinja::context;
 use std::sync::Arc;
 use tower_http::{compression::CompressionLayer, cors::CorsLayer, services::ServeDir};
 use tower_sessions::{MemoryStore, SessionManagerLayer};
 use tracing_subscriber::EnvFilter;
 
-async fn home(State(state): State<Arc<AppState>>) -> Result<Html<String>, gitrust::error::AppError> {
-    let html = state.templates.render("pages/home.jinja", context! {}).await?;
-    Ok(Html(html))
-}
+use gitrust::users::routes::{profile_routes, user_routes};
 
 async fn health() -> &'static str {
     "OK"
@@ -38,9 +35,11 @@ async fn main() -> Result<(), anyhow::Error> {
     let state = Arc::new(AppState::new(pool, config.clone()).await?);
 
     let app = Router::new()
-        .route("/", get(home))
+        .route("/", get(dashboard_feed))
         .route("/health", get(health))
         .merge(auth_routes())
+        .merge(user_routes())
+        .merge(profile_routes())
         .nest_service("/static", ServeDir::new("static"))
         .layer(SessionManagerLayer::new(session_store))
         .layer(CompressionLayer::new())

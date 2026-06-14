@@ -4,6 +4,12 @@
 <div class="auth-page">
     <div class="auth-card">
         <h1>Sign in to GitRust</h1>
+        {% if success %}
+        <div class="flash-message flash-success">{{ success }}</div>
+        {% endif %}
+        {% if error %}
+        <div class="flash-message flash-error">{{ error }}</div>
+        {% endif %}
         <form method="post" action="/auth/login">
             <div class="form-group">
                 <label for="username">Username</label>

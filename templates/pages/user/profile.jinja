@@ -1,0 +1,29 @@
+{% extends "layout.jinja" %}
+{% block title %}{{ profile.display_name }} (@{{ profile.username }}) — GitRust{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:32px;">
+    <div class="profile-header">
+        <div class="profile-avatar" style="display:flex;align-items:center;justify-content:center;font-size:36px;color:var(--color-text-secondary);">
+            {{ profile.display_name | first | upper }}
+        </div>
+        <div class="profile-info">
+            <h1>{{ profile.display_name }}</h1>
+            <p style="color:var(--color-text-secondary);">@{{ profile.username }}</p>
+            {% if profile.bio %}<p class="bio">{{ profile.bio }}</p>{% endif %}
+            <div class="profile-stats">
+                <span>{{ repos_count }} repositories</span>
+                <span>{{ groups_count }} groups</span>
+            </div>
+            {% if is_owner %}
+            <div class="mt-2">
+                <a href="/settings/profile" class="btn btn-sm">Edit Profile</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="empty-state">
+        <h3>Activity</h3>
+        <p>Recent activity will appear here.</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,38 +1,80 @@
 {% extends "layout.jinja" %}
 {% block title %}GitRust — Code Hosting Platform{% endblock %}
 {% block content %}
-<div class="container" style="padding-top:48px;text-align:center;">
-    <h1 style="font-size:48px;margin-bottom:16px;">GitRust</h1>
-    <p style="font-size:20px;color:var(--color-text-secondary);margin-bottom:32px;">
-        A high-performance code hosting platform built in Rust.
-    </p>
-    {% if not current_user %}
-    <div>
-        <a href="/auth/register" class="btn btn-primary" style="font-size:16px;padding:10px 32px;">Get Started — Free</a>
+<div class="container" style="padding-top:32px;">
+
+{% if current_user %}
+    <h1 class="page-title">Dashboard</h1>
+    <div style="display:flex;gap:24px;margin-bottom:24px;">
+        <a href="/projects/new" class="btn btn-primary">New Project</a>
+        <a href="/groups/new" class="btn">New Group</a>
+        <a href="/groups/join" class="btn">Join Group</a>
     </div>
-    <p style="margin-top:12px;font-size:14px;">
-        Already have an account? <a href="/auth/login">Sign in</a>
-    </p>
+
+    {% if events and events | length > 0 %}
+    <div style="max-width:800px;">
+        {% for event in events %}
+        <div class="activity-item">
+            <div class="activity-icon">
+                {% if event.event_type == "repo_created" %}+{% elif event.event_type == "push" %}&uarr;{% elif event.event_type == "issue_opened" %}!{% elif event.event_type == "mr_opened" %}&#8644;{% else %}&middot;{% endif %}
+            </div>
+            <div class="activity-body">
+                <a href="/{{ event.username }}"><strong>{{ event.display_name }}</strong></a>
+                {% if event.event_type == "repo_created" %}
+                    created repository
+                    <a href="/{{ event.username }}/{{ event.repo_name }}">{{ event.repo_name }}</a>
+                {% elif event.event_type == "push" %}
+                    pushed to
+                    <a href="/{{ event.username }}/{{ event.repo_name }}">{{ event.repo_name }}</a>
+                {% elif event.event_type == "issue_opened" %}
+                    opened issue in
+                    <a href="/{{ event.username }}/{{ event.repo_name }}">{{ event.repo_name }}</a>
+                {% elif event.event_type == "mr_opened" %}
+                    opened merge request in
+                    <a href="/{{ event.username }}/{{ event.repo_name }}">{{ event.repo_name }}</a>
+                {% else %}
+                    had activity in {{ event.repo_name | default("GitRust") }}
+                {% endif %}
+                <div class="activity-time">{{ event.created_at }}</div>
+            </div>
+        </div>
+        {% endfor %}
+        {% include "partials/pagination.jinja" %}
+    </div>
     {% else %}
-    <div>
-        <a href="/projects" class="btn btn-primary" style="font-size:16px;padding:10px 32px;">My Projects</a>
-        <a href="/projects/new" class="btn" style="font-size:16px;padding:10px 32px;">New Project</a>
+    <div class="empty-state">
+        <h3>Welcome to GitRust!</h3>
+        <p>Create your first project or join a group to get started.</p>
     </div>
     {% endif %}
 
-    <div style="display:flex;justify-content:center;gap:48px;margin-top:64px;text-align:left;">
-        <div style="max-width:280px;">
-            <h3 style="margin-bottom:8px;">Git Powered</h3>
-            <p style="color:var(--color-text-secondary);font-size:14px;">Full Git support with branches, commits, and merge requests. Clone via HTTPS or SSH.</p>
+{% else %}
+    <div style="text-align:center;padding-top:48px;">
+        <h1 style="font-size:48px;margin-bottom:16px;">GitRust</h1>
+        <p style="font-size:20px;color:var(--color-text-secondary);margin-bottom:32px;">
+            A high-performance code hosting platform built in Rust.
+        </p>
+        <div>
+            <a href="/auth/register" class="btn btn-primary" style="font-size:16px;padding:10px 32px;">Get Started — Free</a>
         </div>
-        <div style="max-width:280px;">
-            <h3 style="margin-bottom:8px;">Collaboration</h3>
-            <p style="color:var(--color-text-secondary);font-size:14px;">Project groups, invite codes, issues, milestones, and merge requests for seamless teamwork.</p>
-        </div>
-        <div style="max-width:280px;">
-            <h3 style="margin-bottom:8px;">Fast &amp; Safe</h3>
-            <p style="color:var(--color-text-secondary);font-size:14px;">Built with Rust for maximum performance and memory safety.</p>
+        <p style="margin-top:12px;font-size:14px;">
+            Already have an account? <a href="/auth/login">Sign in</a>
+        </p>
+        <div style="display:flex;justify-content:center;gap:48px;margin-top:64px;text-align:left;">
+            <div style="max-width:280px;">
+                <h3 style="margin-bottom:8px;">Git Powered</h3>
+                <p style="color:var(--color-text-secondary);font-size:14px;">Full Git support with branches, commits, and merge requests.</p>
+            </div>
+            <div style="max-width:280px;">
+                <h3 style="margin-bottom:8px;">Collaboration</h3>
+                <p style="color:var(--color-text-secondary);font-size:14px;">Project groups, invite codes, issues, and merge requests.</p>
+            </div>
+            <div style="max-width:280px;">
+                <h3 style="margin-bottom:8px;">Fast &amp; Safe</h3>
+                <p style="color:var(--color-text-secondary);font-size:14px;">Built with Rust for maximum performance and memory safety.</p>
+            </div>
         </div>
     </div>
+{% endif %}
 </div>
 {% endblock %}

@@ -1,0 +1,91 @@
+{% extends "layout.jinja" %}
+{% block title %}Settings — GitRust{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:24px;">
+    <h1 class="page-title">Settings</h1>
+    <div class="tabs">
+        <a href="/settings/profile" class="{% if tab == 'profile' %}active{% endif %}">Profile</a>
+        <a href="/settings/password" class="{% if tab == 'password' %}active{% endif %}">Password</a>
+        <a href="/settings/ssh-keys" class="{% if tab == 'ssh_keys' %}active{% endif %}">SSH Keys</a>
+    </div>
+
+    {% if success %}
+    <div class="flash-message flash-success">{{ success }}</div>
+    {% endif %}
+    {% if error %}
+    <div class="flash-message flash-error">{{ error }}</div>
+    {% endif %}
+
+    {% if tab == 'profile' %}
+    <div class="settings-section">
+        <h3>Profile Information</h3>
+        <form method="post" action="/settings/profile">
+            <div class="form-group">
+                <label for="display_name">Display Name</label>
+                <input type="text" id="display_name" name="display_name" class="form-control"
+                       value="{{ current_user.display_name }}" required>
+            </div>
+            <div class="form-group">
+                <label for="bio">Bio</label>
+                <textarea id="bio" name="bio" class="form-control">{{ current_user.bio | default("") }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+    </div>
+    {% endif %}
+
+    {% if tab == 'password' %}
+    <div class="settings-section">
+        <h3>Change Password</h3>
+        <form method="post" action="/settings/password">
+            <div class="form-group">
+                <label for="current_password">Current Password</label>
+                <input type="password" id="current_password" name="current_password" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="new_password">New Password</label>
+                <input type="password" id="new_password" name="new_password" class="form-control" required minlength="8">
+            </div>
+            <div class="form-group">
+                <label for="new_password_confirm">Confirm New Password</label>
+                <input type="password" id="new_password_confirm" name="new_password_confirm" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Password</button>
+        </form>
+    </div>
+    {% endif %}
+
+    {% if tab == 'ssh_keys' %}
+    <div class="settings-section">
+        <h3>SSH Keys</h3>
+        <form method="post" action="/settings/ssh-keys" style="margin-bottom:24px;">
+            <div class="form-group">
+                <label for="title">Key Title</label>
+                <input type="text" id="title" name="title" class="form-control" placeholder="e.g. My Laptop" required>
+            </div>
+            <div class="form-group">
+                <label for="public_key">Public Key</label>
+                <textarea id="public_key" name="public_key" class="form-control"
+                          placeholder="Paste your SSH public key here..." required
+                          style="font-family:var(--font-mono);font-size:13px;"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Add SSH Key</button>
+        </form>
+        {% if ssh_keys | length > 0 %}
+        <ul class="ssh-key-list">
+            {% for key in ssh_keys %}
+            <li class="ssh-key-item">
+                <div>
+                    <div class="key-info">{{ key.title }}</div>
+                    <div class="key-fingerprint">{{ key.fingerprint }}</div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-small">No SSH keys added yet.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
