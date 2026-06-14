@@ -74,7 +74,7 @@ pub async fn upload_pack(
     State(state): State<Arc<AppState>>,
     session: Session,
     Path(params): Path<GitParams>,
-    body: String,
+    body: axum::body::Bytes,
 ) -> AppResult<Response> {
     let current_user = current_user_from_session(&session).await;
     let (repository, _) = service::resolve_repo(&state.pool, &params.owner, &params.repo).await?;
@@ -99,7 +99,7 @@ pub async fn upload_pack(
 
     use std::io::Write;
     if let Some(mut stdin) = child.stdin.take() {
-        stdin.write_all(body.as_bytes()).ok();
+        stdin.write_all(&body).ok();
     }
 
     let output = child.wait_with_output()
@@ -117,7 +117,7 @@ pub async fn receive_pack(
     State(state): State<Arc<AppState>>,
     session: Session,
     Path(params): Path<GitParams>,
-    body: String,
+    body: axum::body::Bytes,
 ) -> AppResult<Response> {
     let _current_user = current_user_from_session(&session).await
         .ok_or(crate::error::AppError::Unauthorized)?;
@@ -140,7 +140,7 @@ pub async fn receive_pack(
 
     use std::io::Write;
     if let Some(mut stdin) = child.stdin.take() {
-        stdin.write_all(body.as_bytes()).ok();
+        stdin.write_all(&body).ok();
     }
 
     let output = child.wait_with_output()
