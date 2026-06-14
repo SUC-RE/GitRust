@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const resp = await fetch('/auth/captcha/refresh', { method: 'POST' });
                 const data = await resp.json();
-                img.src = 'data:image/png;base64,' + data.image;
+                img.src = data.image;
                 token.value = data.token;
             } catch (e) { console.error('captcha refresh failed', e); }
         });

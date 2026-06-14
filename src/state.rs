@@ -22,6 +22,7 @@ impl TemplateEngine {
         let reloader = AutoReloader::new(move |notifier| {
             let mut env = minijinja::Environment::new();
             env.set_auto_escape_callback(|_| minijinja::AutoEscape::Html);
+            env.set_loader(minijinja::path_loader(&dir));
             notifier.watch_path(&dir, true);
             Ok(env)
         });

@@ -31,7 +31,7 @@
             <div class="form-group">
                 <label>Verification</label>
                 <div class="captcha-row">
-                    <img id="captcha-img" src="data:image/png;base64,{{ captcha_image }}" alt="Captcha" title="Click to refresh">
+                    <img id="captcha-img" src="{{ captcha_image }}" alt="Captcha" title="Click to refresh">
                     <button type="button" id="captcha-refresh" class="btn btn-sm">Refresh</button>
                 </div>
                 <input type="text" name="captcha_input" class="form-control mt-2" placeholder="Enter the code above" required>
