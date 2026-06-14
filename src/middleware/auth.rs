@@ -8,6 +8,7 @@ use std::sync::Arc;
 use tower_sessions::Session;
 
 use crate::state::AppState;
+use crate::users::model::UserInfo;
 
 pub async fn require_auth(
     session: Session,
@@ -15,14 +16,17 @@ pub async fn require_auth(
     request: axum::http::Request<axum::body::Body>,
     next: Next,
 ) -> Result<Response, StatusCode> {
-    match session.get_value("user_id").await {
-        Ok(Some(_user_id)) => {
+    let user_id: Option<String> = session.get("user_id").await.unwrap_or(None);
+    match user_id {
+        Some(_) => {
             let response = next.run(request).await;
             Ok(response)
         }
-        _ => {
-            let response = Redirect::to("/auth/login").into_response();
-            Ok(response)
-        }
+        None => Ok(Redirect::to("/auth/login").into_response()),
     }
+}
+
+pub async fn current_user_from_session(session: &Session) -> Option<UserInfo> {
+    let stored: Option<serde_json::Value> = session.get("user").await.ok().flatten();
+    stored.and_then(|v| serde_json::from_value::<UserInfo>(v).ok())
 }

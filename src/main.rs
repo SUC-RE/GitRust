@@ -1,13 +1,16 @@
-use axum::{routing::get, Router};
+use axum::{extract::State, response::Html, routing::get, Router};
+use gitrust::auth::routes::auth_routes;
 use gitrust::config::Config;
 use gitrust::state::AppState;
+use minijinja::context;
 use std::sync::Arc;
-use tower_http::{compression::CompressionLayer, cors::CorsLayer};
+use tower_http::{compression::CompressionLayer, cors::CorsLayer, services::ServeDir};
 use tower_sessions::{MemoryStore, SessionManagerLayer};
 use tracing_subscriber::EnvFilter;
 
-async fn home() -> &'static str {
-    "GitRust — Code Hosting Platform"
+async fn home(State(state): State<Arc<AppState>>) -> Result<Html<String>, gitrust::error::AppError> {
+    let html = state.templates.render("pages/home.jinja", context! {}).await?;
+    Ok(Html(html))
 }
 
 async fn health() -> &'static str {
@@ -37,6 +40,8 @@ async fn main() -> Result<(), anyhow::Error> {
     let app = Router::new()
         .route("/", get(home))
         .route("/health", get(health))
+        .merge(auth_routes())
+        .nest_service("/static", ServeDir::new("static"))
         .layer(SessionManagerLayer::new(session_store))
         .layer(CompressionLayer::new())
         .layer(CorsLayer::permissive())
