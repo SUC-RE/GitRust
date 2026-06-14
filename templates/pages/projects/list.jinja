@@ -1,0 +1,48 @@
+{% extends "layout.jinja" %}
+{% block title %}Projects — GitRust{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:24px;">
+    <div class="flex-between mb-4">
+        <h1 class="page-title" style="margin-bottom:0;">Projects</h1>
+        <div style="display:flex;gap:8px;">
+            <a href="/projects/new" class="btn btn-primary btn-sm">New Project</a>
+            <a href="/groups/new" class="btn btn-sm">New Group</a>
+        </div>
+    </div>
+
+    {% if groups | length > 0 %}
+    <h2 style="font-size:16px;margin-bottom:12px;">Groups</h2>
+    <div class="card-grid" style="margin-bottom:32px;">
+        {% for g in groups %}
+        <div class="card">
+            <h3><a href="/groups/{{ g.name }}">{{ g.display_name }}</a></h3>
+            <p>@{{ g.name }} &middot; {{ g.member_count | default(0) }} members &middot; {{ g.role }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <h2 style="font-size:16px;margin-bottom:12px;">Repositories</h2>
+    {% if repos | length > 0 %}
+    <div class="card-grid">
+        {% for repo in repos %}
+        <div class="card">
+            <h3>
+                {% if repo.owner_type == "user" %}
+                <a href="/{{ current_user.username }}/{{ repo.name }}">{{ repo.name }}</a>
+                {% else %}
+                <a href="/groups/{{ repo.owner_id }}/{{ repo.name }}">{{ repo.name }}</a>
+                {% endif %}
+            </h3>
+            {% if repo.description %}<p>{{ repo.description }}</p>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h3>No repositories yet</h3>
+        <p>Create your first project to get started.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "layout.jinja" %}
+{% block title %}Join Group — GitRust{% endblock %}
+{% block content %}
+<div class="container" style="max-width:480px;padding-top:32px;">
+    <h1 class="page-title">Join a Group</h1>
+    {% if error %}
+    <div class="flash-message flash-error">{{ error }}</div>
+    {% endif %}
+    <form method="post" action="/groups/join">
+        <div class="form-group">
+            <label for="code">Invite Code</label>
+            <input type="text" id="code" name="code" class="form-control" required
+                   placeholder="Enter the invite code" style="font-family:var(--font-mono);">
+        </div>
+        <button type="submit" class="btn btn-primary">Join Group</button>
+    </form>
+</div>
+{% endblock %}

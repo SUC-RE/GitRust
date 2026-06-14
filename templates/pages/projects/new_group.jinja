@@ -1,0 +1,26 @@
+{% extends "layout.jinja" %}
+{% block title %}Create Group — GitRust{% endblock %}
+{% block content %}
+<div class="container" style="max-width:560px;padding-top:32px;">
+    <h1 class="page-title">Create a new group</h1>
+    <form method="post" action="/groups/new">
+        <div class="form-group">
+            <label for="name">Group Name</label>
+            <input type="text" id="name" name="name" class="form-control" required
+                   placeholder="my-team">
+            <p class="text-small">Used in URLs. Only letters, numbers, -, and _.</p>
+        </div>
+        <div class="form-group">
+            <label for="display_name">Display Name</label>
+            <input type="text" id="display_name" name="display_name" class="form-control" required
+                   placeholder="My Team">
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" class="form-control"
+                      placeholder="What is this group about?"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Group</button>
+    </form>
+</div>
+{% endblock %}

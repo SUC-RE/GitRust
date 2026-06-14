@@ -8,6 +8,8 @@ use tower_http::{compression::CompressionLayer, cors::CorsLayer, services::Serve
 use tower_sessions::{MemoryStore, SessionManagerLayer};
 use tracing_subscriber::EnvFilter;
 
+use gitrust::groups::routes::group_routes;
+use gitrust::projects::routes::project_routes;
 use gitrust::users::routes::{profile_routes, user_routes};
 
 async fn health() -> &'static str {
@@ -39,6 +41,8 @@ async fn main() -> Result<(), anyhow::Error> {
         .route("/health", get(health))
         .merge(auth_routes())
         .merge(user_routes())
+        .merge(group_routes())
+        .merge(project_routes())
         .merge(profile_routes())
         .nest_service("/static", ServeDir::new("static"))
         .layer(SessionManagerLayer::new(session_store))

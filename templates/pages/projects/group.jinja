@@ -1,0 +1,74 @@
+{% extends "layout.jinja" %}
+{% block title %}{{ group.display_name }} — GitRust{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:24px;">
+    <div style="display:flex;gap:24px;align-items:flex-start;margin-bottom:24px;">
+        <div style="width:64px;height:64px;border-radius:12px;background:var(--color-bg-tertiary);display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--color-text-secondary);flex-shrink:0;">
+            {{ group.display_name | first | upper }}
+        </div>
+        <div>
+            <h1>{{ group.display_name }}</h1>
+            <p style="color:var(--color-text-secondary);">@{{ group.name }}</p>
+            {% if group.description %}<p style="margin-top:8px;">{{ group.description }}</p>{% endif %}
+            <div style="margin-top:8px;font-size:13px;color:var(--color-text-secondary);">
+                {{ members | length }} members
+            </div>
+        </div>
+    </div>
+
+    {% if not is_member and current_user %}
+    <div class="mb-4">
+        <p style="color:var(--color-text-secondary);">You are not a member of this group. Ask an owner for an invite code.</p>
+    </div>
+    {% endif %}
+
+    {% if is_owner %}
+    <div class="settings-section" style="margin-bottom:24px;">
+        <h3>Invite Codes</h3>
+        <form method="post" action="/groups/{{ group.name }}/invite" style="margin-bottom:16px;display:flex;gap:8px;align-items:end;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label for="max_uses">Max Uses (optional)</label>
+                <input type="number" id="max_uses" name="max_uses" class="form-control" style="width:120px;">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label for="expires_days">Expires in Days (optional)</label>
+                <input type="number" id="expires_days" name="expires_days" class="form-control" style="width:120px;">
+            </div>
+            <button type="submit" class="btn btn-primary">Generate Invite Code</button>
+        </form>
+        {% if invite_codes | length > 0 %}
+        <table class="file-table" style="max-width:600px;">
+            <thead><tr><th>Code</th><th>Uses</th><th>Status</th><th>Created</th></tr></thead>
+            <tbody>
+            {% for c in invite_codes %}
+            <tr>
+                <td style="font-family:var(--font-mono);">{{ c.code }}</td>
+                <td>{{ c.current_uses }}{% if c.max_uses %}/{{ c.max_uses }}{% endif %}</td>
+                <td>{% if c.is_active %}<span style="color:var(--color-success);">Active</span>{% else %}<span style="color:var(--color-text-secondary);">Inactive</span>{% endif %}</td>
+                <td style="font-size:12px;">{{ c.created_at }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-small">No invite codes yet.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="settings-section">
+        <h3>Members ({{ members | length }})</h3>
+        <div style="display:flex;flex-direction:column;gap:8px;max-width:400px;">
+        {% for m in members %}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--color-border);">
+            <div>
+                <a href="/{{ m.username }}">{{ m.display_name }}</a>
+                <span style="color:var(--color-text-secondary);font-size:13px;margin-left:8px;">@{{ m.username }}</span>
+            </div>
+            <span class="label" style="background:var(--color-bg-tertiary);">{{ m.role }}</span>
+        </div>
+        {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
