@@ -101,6 +101,8 @@ pub async fn create_repo(
         if !fork_url.is_empty() {
             let repo_path = crate::git_core::repo::repo_path(&state.config.data_dir, &owner_id.to_string(), &form.name);
             tracing::info!("Forking from {} to {:?}", fork_url, repo_path);
+            // Remove empty bare repo so git clone --bare can write to it
+            std::fs::remove_dir_all(&repo_path).ok();
             let result = std::process::Command::new("git")
                 .args(["clone", "--bare", "--mirror", fork_url])
                 .arg(&repo_path)
@@ -111,10 +113,13 @@ pub async fn create_repo(
                 }
                 Ok(output) => {
                     let stderr = String::from_utf8_lossy(&output.stderr);
-                    tracing::warn!("Fork clone warning: {}", stderr);
+                    tracing::warn!("Fork clone failed: {}", stderr);
+                    // Re-init empty bare repo on failure
+                    crate::git_core::repo::init_bare(&repo_path).ok();
                 }
                 Err(e) => {
-                    tracing::error!("Fork clone failed: {}", e);
+                    tracing::error!("Fork clone error: {}", e);
+                    crate::git_core::repo::init_bare(&repo_path).ok();
                 }
             }
         }

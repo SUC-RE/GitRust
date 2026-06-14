@@ -25,32 +25,48 @@ async fn check_git_auth(
     session: &Session,
     headers: &HeaderMap,
 ) -> bool {
-    // Check session first
     if let Some(user) = current_user_from_session(session).await {
+        tracing::debug!("Git auth: session user={}", user.username);
         return true;
     }
-    // Check HTTP Basic Auth
     if let Some(auth) = headers.get("Authorization") {
         if let Ok(auth_str) = auth.to_str() {
+            tracing::debug!("Git auth: Authorization header present");
             if auth_str.starts_with("Basic ") {
-                let encoded = auth_str.trim_start_matches("Basic ");
-                if let Ok(decoded) = base64_decode(encoded) {
-                    if let Some((username, password)) = decoded.split_once(':') {
-                        if let Ok(Some(user)) = User::find_by_username(&state.pool, username).await {
-                            use argon2::{
-                                password_hash::{PasswordHash, PasswordVerifier},
-                                Argon2,
-                            };
-                            if let Ok(parsed) = PasswordHash::new(&user.password_hash) {
-                                return Argon2::default()
-                                    .verify_password(password.as_bytes(), &parsed)
-                                    .is_ok();
+                let encoded = auth_str.trim_start_matches("Basic ").trim();
+                match base64_decode(encoded) {
+                    Ok(decoded) => {
+                        tracing::debug!("Git auth: decoded Basic creds");
+                        if let Some((username, password)) = decoded.split_once(':') {
+                            tracing::debug!("Git auth: username={}", username);
+                            match User::find_by_username(&state.pool, username).await {
+                                Ok(Some(user)) => {
+                                    use argon2::{
+                                        password_hash::{PasswordHash, PasswordVerifier},
+                                        Argon2,
+                                    };
+                                    match PasswordHash::new(&user.password_hash) {
+                                        Ok(parsed) => {
+                                            let ok = Argon2::default()
+                                                .verify_password(password.as_bytes(), &parsed)
+                                                .is_ok();
+                                            tracing::debug!("Git auth: password match={}", ok);
+                                            return ok;
+                                        }
+                                        Err(e) => tracing::debug!("Git auth: hash parse error={}", e),
+                                    }
+                                }
+                                Ok(None) => tracing::debug!("Git auth: user not found"),
+                                Err(e) => tracing::debug!("Git auth: db error={}", e),
                             }
                         }
                     }
+                    Err(_) => tracing::debug!("Git auth: base64 decode failed"),
                 }
             }
         }
+    } else {
+        tracing::debug!("Git auth: no Authorization header");
     }
     false
 }
