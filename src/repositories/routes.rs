@@ -19,6 +19,7 @@ pub fn repo_routes() -> Router<Arc<AppState>> {
         // Repository settings
         .route("/{owner}/{repo}/-/settings", get(handlers::settings_page))
         .route("/{owner}/{repo}/-/settings", post(handlers::settings_save))
+        .route("/{owner}/{repo}/-/settings/delete", post(handlers::delete_repo))
 }
 
 pub fn repo_settings_routes() -> Router<Arc<AppState>> {

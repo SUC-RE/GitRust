@@ -171,3 +171,31 @@ pub async fn settings_save(
 
     Ok(Redirect::to(&format!("/{}/{}", params.owner, params.repo)))
 }
+
+pub async fn delete_repo(
+    State(state): State<Arc<AppState>>, session: Session,
+    Path(params): Path<RepoParams>,
+) -> AppResult<Redirect> {
+    let current_user = current_user_from_session(&session).await
+        .ok_or(AppError::Unauthorized)?;
+    let (repository, _) = service::resolve_repo(&state.pool, &params.owner, &params.repo).await?;
+
+    // Only allow owner to delete
+    if repository.owner_type == "user" {
+        let owner: (uuid::Uuid,) = sqlx::query_as("SELECT id FROM users WHERE username = $1")
+            .bind(&params.owner).fetch_one(&state.pool).await?;
+        if owner.0 != current_user.id {
+            return Err(AppError::Forbidden("Only the owner can delete this repository.".into()));
+        }
+    }
+
+    // Remove bare repo from filesystem
+    let repo_path = git_repo::repo_path(&state.config.data_dir, &repository.owner_id.to_string(), &repository.name);
+    std::fs::remove_dir_all(&repo_path).ok();
+
+    // Delete from database
+    sqlx::query("DELETE FROM repositories WHERE id = $1")
+        .bind(repository.id).execute(&state.pool).await?;
+
+    Ok(Redirect::to("/projects"))
+}
