@@ -1,0 +1,41 @@
+{% extends "pages/repo/layout.jinja" %}
+{% block title %}{{ issue.title }} · Issue #{{ issue.number }}{% endblock %}
+{% block repo_content %}
+<h2>{{ issue.title }} <span style="color:var(--color-text-secondary);font-size:18px;">#{{ issue.number }}</span></h2>
+<div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">
+    <span class="issue-status {{ issue.state }}" style="font-size:13px;">
+        {% if issue.state == 'open' %}&#9675; Open{% else %}&#10005; Closed{% endif %}
+    </span>
+    <span class="text-small">
+        <a href="/{{ issue.author_username }}">{{ issue.author_display_name }}</a>
+        opened this issue &middot; {{ issue.created_at }}
+    </span>
+</div>
+{% if issue.labels | length > 0 %}
+<div style="margin-bottom:12px;">
+    {% for label in issue.labels %}
+    <span class="label" style="background:{{ label.color }}33;border:1px solid {{ label.color }};color:{{ label.color }};">{{ label.name }}</span>
+    {% endfor %}
+</div>
+{% endif %}
+{% if issue.description_html %}
+<div class="readme-container">
+    <div class="readme-body">{{ issue.description_html | safe }}</div>
+</div>
+{% elif issue.description %}
+<div class="readme-container">
+    <div class="readme-body"><pre>{{ issue.description }}</pre></div>
+</div>
+{% endif %}
+<div style="margin-top:16px;">
+    {% if issue.state == 'open' %}
+    <form method="post" action="/{{ repo.owner_name }}/{{ repo.name }}/-/issues/{{ issue.number }}/close" style="display:inline;">
+        <button type="submit" class="btn btn-sm">Close Issue</button>
+    </form>
+    {% else %}
+    <form method="post" action="/{{ repo.owner_name }}/{{ repo.name }}/-/issues/{{ issue.number }}/reopen" style="display:inline;">
+        <button type="submit" class="btn btn-sm">Reopen Issue</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

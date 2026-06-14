@@ -1,0 +1,34 @@
+{% extends "pages/repo/layout.jinja" %}
+{% block title %}Issues — {{ repo.owner_name }}/{{ repo.name }}{% endblock %}
+{% block repo_content %}
+<div class="flex-between mb-4">
+    <h2>Issues</h2>
+    <a href="/{{ repo.owner_name }}/{{ repo.name }}/-/issues/new" class="btn btn-primary btn-sm">New Issue</a>
+</div>
+<div class="tabs mb-4">
+    <a href="?state=open" class="{% if current_state == 'open' %}active{% endif %}">Open</a>
+    <a href="?state=closed" class="{% if current_state == 'closed' %}active{% endif %}">Closed</a>
+</div>
+{% if issues | length > 0 %}
+<ul class="issue-list">
+{% for issue in issues %}
+<li class="issue-item">
+    <div class="issue-status {{ issue.state }}">{% if issue.state == 'open' %}&#9675;{% else %}&#10005;{% endif %}</div>
+    <div class="issue-body">
+        <div class="issue-title">
+            <a href="/{{ repo.owner_name }}/{{ repo.name }}/-/issues/{{ issue.number }}">{{ issue.title }}</a>
+        </div>
+        <div class="issue-meta">
+            #{{ issue.number }} opened by <a href="/{{ issue.author_username }}">{{ issue.author_display_name }}</a>
+            &middot; {{ issue.created_at }}
+            {% if issue.label_count and issue.label_count > 0 %}&middot; {{ issue.label_count }} labels{% endif %}
+        </div>
+    </div>
+</li>
+{% endfor %}
+</ul>
+{% include "partials/pagination.jinja" %}
+{% else %}
+<div class="empty-state"><h3>No issues</h3><p>No {{ current_state }} issues found.</p></div>
+{% endif %}
+{% endblock %}
