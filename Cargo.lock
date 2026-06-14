@@ -1332,6 +1332,7 @@ dependencies = [
  "argon2",
  "async-trait",
  "axum",
+ "base64",
  "captcha-rs",
  "chrono",
  "comrak",

@@ -1,7 +1,7 @@
 use axum::{
     body::Body,
     extract::{Path, Query, State},
-    http::StatusCode,
+    http::{HeaderMap, StatusCode},
     response::Response,
 };
 use serde::Deserialize;
@@ -12,6 +12,7 @@ use crate::error::AppResult;
 use crate::middleware::auth::current_user_from_session;
 use crate::repositories::service;
 use crate::state::AppState;
+use crate::users::model::User;
 
 #[derive(Deserialize)]
 pub struct GitParams { pub owner: String, pub repo: String }
@@ -19,15 +20,56 @@ pub struct GitParams { pub owner: String, pub repo: String }
 #[derive(Deserialize)]
 pub struct ServiceQuery { pub service: String }
 
+async fn check_git_auth(
+    state: &AppState,
+    session: &Session,
+    headers: &HeaderMap,
+) -> bool {
+    // Check session first
+    if let Some(user) = current_user_from_session(session).await {
+        return true;
+    }
+    // Check HTTP Basic Auth
+    if let Some(auth) = headers.get("Authorization") {
+        if let Ok(auth_str) = auth.to_str() {
+            if auth_str.starts_with("Basic ") {
+                let encoded = auth_str.trim_start_matches("Basic ");
+                if let Ok(decoded) = base64_decode(encoded) {
+                    if let Some((username, password)) = decoded.split_once(':') {
+                        if let Ok(Some(user)) = User::find_by_username(&state.pool, username).await {
+                            use argon2::{
+                                password_hash::{PasswordHash, PasswordVerifier},
+                                Argon2,
+                            };
+                            if let Ok(parsed) = PasswordHash::new(&user.password_hash) {
+                                return Argon2::default()
+                                    .verify_password(password.as_bytes(), &parsed)
+                                    .is_ok();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    false
+}
+
+fn base64_decode(input: &str) -> Result<String, ()> {
+    use base64::{Engine as _, engine::general_purpose};
+    let bytes = general_purpose::STANDARD.decode(input).map_err(|_| ())?;
+    String::from_utf8(bytes).map_err(|_| ())
+}
+
 pub async fn info_refs(
     State(state): State<Arc<AppState>>,
     session: Session,
+    headers: HeaderMap,
     Path(params): Path<GitParams>,
     Query(query): Query<ServiceQuery>,
 ) -> AppResult<Response> {
-    let current_user = current_user_from_session(&session).await;
     let (repository, _) = service::resolve_repo(&state.pool, &params.owner, &params.repo).await?;
-    if repository.is_private && current_user.is_none() {
+    if repository.is_private && !check_git_auth(&state, &session, &headers).await {
         return Err(crate::error::AppError::Unauthorized);
     }
 
@@ -55,11 +97,9 @@ pub async fn info_refs(
             stderr: vec![],
         });
 
-    // Git pkt-line protocol: service header + flush packet + ref advertisement
     let pkt = format!("# service={}\n", query.service);
     let pkt_len = format!("{:04x}", pkt.len() + 4);
     let body_data = format!("{}{}0000{}", pkt_len, pkt, String::from_utf8_lossy(&output.stdout));
-
     let content_type = format!("application/x-{}-advertisement", query.service);
 
     Ok(Response::builder()
@@ -73,12 +113,12 @@ pub async fn info_refs(
 pub async fn upload_pack(
     State(state): State<Arc<AppState>>,
     session: Session,
+    headers: HeaderMap,
     Path(params): Path<GitParams>,
     body: axum::body::Bytes,
 ) -> AppResult<Response> {
-    let current_user = current_user_from_session(&session).await;
     let (repository, _) = service::resolve_repo(&state.pool, &params.owner, &params.repo).await?;
-    if repository.is_private && current_user.is_none() {
+    if repository.is_private && !check_git_auth(&state, &session, &headers).await {
         return Err(crate::error::AppError::Unauthorized);
     }
 
@@ -116,11 +156,13 @@ pub async fn upload_pack(
 pub async fn receive_pack(
     State(state): State<Arc<AppState>>,
     session: Session,
+    headers: HeaderMap,
     Path(params): Path<GitParams>,
     body: axum::body::Bytes,
 ) -> AppResult<Response> {
-    let _current_user = current_user_from_session(&session).await
-        .ok_or(crate::error::AppError::Unauthorized)?;
+    if !check_git_auth(&state, &session, &headers).await {
+        return Err(crate::error::AppError::Unauthorized);
+    }
     let (repository, _) = service::resolve_repo(&state.pool, &params.owner, &params.repo).await?;
 
     let repo_path = crate::git_core::repo::repo_path(
