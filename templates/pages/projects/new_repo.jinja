@@ -25,6 +25,12 @@
             <textarea id="description" name="description" class="form-control"></textarea>
         </div>
         <div class="form-group">
+            <label for="fork_url">Fork from remote URL (optional)</label>
+            <input type="text" id="fork_url" name="fork_url" class="form-control"
+                   placeholder="https://github.com/user/repo.git">
+            <p class="text-small">Leave blank to create an empty repository.</p>
+        </div>
+        <div class="form-group">
             <label><input type="checkbox" name="is_private"> Private repository</label>
         </div>
         <button type="submit" class="btn btn-primary">Create Repository</button>

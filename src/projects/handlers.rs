@@ -58,6 +58,7 @@ pub struct NewRepoForm {
     pub owner_type: String,
     pub owner_name: String,
     pub is_private: Option<String>,
+    pub fork_url: Option<String>,
 }
 
 pub async fn new_repo_form(
@@ -94,6 +95,31 @@ pub async fn create_repo(
 
     let is_private = form.is_private.as_deref() == Some("on");
     let repo = repo_svc::create_repo(&state.pool, &state.config.data_dir, &owner_type, owner_id, &form.name, &form.description, is_private).await?;
+
+    // Fork from remote URL if provided
+    if let Some(ref fork_url) = form.fork_url {
+        if !fork_url.is_empty() {
+            let repo_path = crate::git_core::repo::repo_path(&state.config.data_dir, &owner_id.to_string(), &form.name);
+            tracing::info!("Forking from {} to {:?}", fork_url, repo_path);
+            let result = std::process::Command::new("git")
+                .args(["clone", "--bare", "--mirror", fork_url])
+                .arg(&repo_path)
+                .output();
+            match result {
+                Ok(output) if output.status.success() => {
+                    tracing::info!("Fork completed successfully");
+                }
+                Ok(output) => {
+                    let stderr = String::from_utf8_lossy(&output.stderr);
+                    tracing::warn!("Fork clone warning: {}", stderr);
+                }
+                Err(e) => {
+                    tracing::error!("Fork clone failed: {}", e);
+                }
+            }
+        }
+    }
+
     let owner_display = if owner_type == "user" { current_user.username.clone() } else { form.owner_name.clone() };
     Ok(Redirect::to(&format!("/{}/{}", owner_display, repo.name)))
 }
