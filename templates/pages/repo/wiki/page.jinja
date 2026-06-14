@@ -1,0 +1,16 @@
+{% extends "pages/repo/layout.jinja" %}
+{% block title %}{{ page.title }} — Wiki — {{ repo.name }}{% endblock %}
+{% block repo_content %}
+<div class="flex-between mb-4">
+    <h2>{{ page.title }}</h2>
+    <a href="/{{ repo.owner_name }}/{{ repo.name }}/-/wiki/{{ slug }}/edit" class="btn btn-sm">Edit</a>
+</div>
+{% if page %}
+<p class="text-small">Last edited by {{ page.author_display_name }} &middot; {{ page.updated_at }}</p>
+<div class="readme-container" style="margin-top:16px;">
+    <div class="readme-body">{{ content_html | safe }}</div>
+</div>
+{% else %}
+<div class="empty-state"><h3>Page not found</h3></div>
+{% endif %}
+{% endblock %}

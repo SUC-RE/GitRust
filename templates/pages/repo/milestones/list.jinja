@@ -1,0 +1,34 @@
+{% extends "pages/repo/layout.jinja" %}
+{% block title %}Milestones — {{ repo.owner_name }}/{{ repo.name }}{% endblock %}
+{% block repo_content %}
+<h2>Milestones</h2>
+<form method="post" action="/{{ repo.owner_name }}/{{ repo.name }}/-/milestones/new" style="margin-bottom:24px;padding:16px;background:var(--color-bg-secondary);border-radius:8px;border:1px solid var(--color-border);">
+    <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;">
+        <div class="form-group" style="margin-bottom:0;"><input type="text" name="title" class="form-control" placeholder="Title" required></div>
+        <div class="form-group" style="margin-bottom:0;"><input type="date" name="due_date" class="form-control" style="width:150px;"></div>
+        <button type="submit" class="btn btn-sm btn-primary">Create</button>
+    </div>
+</form>
+{% if milestones | length > 0 %}
+<div style="display:flex;flex-direction:column;gap:12px;">
+{% for m in milestones %}
+<div style="border:1px solid var(--color-border);border-radius:8px;padding:16px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+        <h3 style="font-size:16px;margin:0;">{{ m.title }}</h3>
+        <span class="label" style="background:var(--color-bg-tertiary);font-size:12px;">{{ m.state }}</span>
+    </div>
+    {% if m.due_date %}<p class="text-small">Due: {{ m.due_date }}</p>{% endif %}
+    <div style="margin-top:8px;background:var(--color-bg-tertiary);border-radius:4px;height:8px;overflow:hidden;">
+        {% set total = (m.open_issues | default(0)) + (m.closed_issues | default(0)) %}
+        {% if total > 0 %}
+        <div style="background:var(--color-success);height:100%;width:{{ (m.closed_issues | default(0)) / total * 100 }}%;"></div>
+        {% endif %}
+    </div>
+    <p class="text-small">{{ m.closed_issues | default(0) }} closed / {{ m.open_issues | default(0) }} open</p>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<div class="empty-state"><h3>No milestones</h3></div>
+{% endif %}
+{% endblock %}

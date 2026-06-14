@@ -1,0 +1,34 @@
+{% extends "pages/repo/layout.jinja" %}
+{% block title %}Members — {{ repo.owner_name }}/{{ repo.name }}{% endblock %}
+{% block repo_content %}
+<h2>Members</h2>
+<form method="post" action="/{{ repo.owner_name }}/{{ repo.name }}/-/members/add" style="display:flex;gap:8px;align-items:end;margin-bottom:24px;">
+    <div class="form-group" style="margin-bottom:0;">
+        <input type="text" name="username" class="form-control" placeholder="Username" required>
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+        <select name="permission" class="form-control">
+            <option value="read">Read</option>
+            <option value="write">Write</option>
+            <option value="admin">Admin</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-sm btn-primary">Add</button>
+</form>
+{% if members | length > 0 %}
+<table class="file-table">
+    <thead><tr><th>User</th><th>Permission</th><th>Added</th></tr></thead>
+    <tbody>
+    {% for m in members %}
+    <tr>
+        <td><a href="/{{ m.username }}">{{ m.display_name }}</a> <span class="text-small">@{{ m.username }}</span></td>
+        <td><span class="label" style="background:var(--color-bg-tertiary);">{{ m.permission }}</span></td>
+        <td class="text-small">{{ m.added_at }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="empty-state"><h3>No members</h3></div>
+{% endif %}
+{% endblock %}

@@ -1,6 +1,6 @@
 use axum::{
     extract::{Path, Query, State},
-    response::{Html, Redirect, IntoResponse},
+    response::{Html, Redirect},
     Form,
 };
 use minijinja::context;

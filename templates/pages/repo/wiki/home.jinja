@@ -1,0 +1,24 @@
+{% extends "pages/repo/layout.jinja" %}
+{% block title %}Wiki — {{ repo.owner_name }}/{{ repo.name }}{% endblock %}
+{% block repo_content %}
+<div class="flex-between mb-4">
+    <h2>Wiki</h2>
+    <a href="/{{ repo.owner_name }}/{{ repo.name }}/-/wiki/home/edit" class="btn btn-sm btn-primary">New Page</a>
+</div>
+{% if home_page %}
+<div class="wiki-content">{{ render_markdown(home_page.content) | safe if home_page.content else "" }}</div>
+{% else %}
+<div class="empty-state">
+    <h3>Welcome to the Wiki</h3>
+    <p><a href="/{{ repo.owner_name }}/{{ repo.name }}/-/wiki/home/edit">Create the first page</a></p>
+</div>
+{% endif %}
+{% if pages | length > 0 %}
+<div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--color-border);">
+    <h3 style="font-size:14px;margin-bottom:8px;">All Pages</h3>
+    {% for p in pages %}
+    <div><a href="/{{ repo.owner_name }}/{{ repo.name }}/-/wiki/{{ p.slug }}">{{ p.title }}</a></div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
