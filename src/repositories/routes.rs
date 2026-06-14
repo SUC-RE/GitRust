@@ -13,9 +13,9 @@ pub fn repo_routes() -> Router<Arc<AppState>> {
         .route("/{owner}/{repo}/commit/{sha}", get(handlers::commit_detail))
         .route("/{owner}/{repo}/branches", get(handlers::branches))
         // Git Smart HTTP
-        .route("/{owner}/{repo}.git/info/refs", get(git_http::info_refs))
-        .route("/{owner}/{repo}.git/git-upload-pack", post(git_http::upload_pack))
-        .route("/{owner}/{repo}.git/git-receive-pack", post(git_http::receive_pack))
+        .route("/{owner}/{repo}/git/info/refs", get(git_http::info_refs))
+        .route("/{owner}/{repo}/git/git-upload-pack", post(git_http::upload_pack))
+        .route("/{owner}/{repo}/git/git-receive-pack", post(git_http::receive_pack))
         // Repository settings
         .route("/{owner}/{repo}/-/settings", get(handlers::settings_page))
         .route("/{owner}/{repo}/-/settings", post(handlers::settings_save))
