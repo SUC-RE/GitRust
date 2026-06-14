@@ -1,13 +1,14 @@
 use axum::{
     extract::{Path, Query, State},
-    response::Html,
+    response::{Html, Redirect},
+    Form,
 };
 use minijinja::context;
 use serde::Deserialize;
 use std::sync::Arc;
 use tower_sessions::Session;
 
-use crate::error::AppResult;
+use crate::error::{AppError, AppResult};
 use crate::git_core::{commit, diff, repo as git_repo, tree};
 use crate::markdown::render::render_markdown;
 use crate::middleware::auth::current_user_from_session;
@@ -129,4 +130,43 @@ pub async fn branches(
         sidebar_active => "files",
     }).await?;
     Ok(Html(html))
+}
+
+
+#[derive(Deserialize)]
+pub struct SettingsForm {
+    pub description: String,
+    pub is_private: Option<String>,
+}
+
+pub async fn settings_page(
+    State(state): State<Arc<AppState>>, session: Session,
+    Path(params): Path<RepoParams>,
+) -> AppResult<Html<String>> {
+    let current_user = current_user_from_session(&session).await;
+    let (repository, _) = service::resolve_repo(&state.pool, &params.owner, &params.repo).await?;
+    let repo_info = service::get_repo_info(&state.pool, &repository).await?;
+    let html = state.templates.render("pages/repo/settings.jinja", context! {
+        current_user, repo => repo_info, sidebar_active => "settings",
+    }).await?;
+    Ok(Html(html))
+}
+
+pub async fn settings_save(
+    State(state): State<Arc<AppState>>, session: Session,
+    Path(params): Path<RepoParams>, Form(form): Form<SettingsForm>,
+) -> AppResult<Redirect> {
+    let _current_user = current_user_from_session(&session).await
+        .ok_or(AppError::Unauthorized)?;
+    let (repository, _) = service::resolve_repo(&state.pool, &params.owner, &params.repo).await?;
+
+    let is_private = form.is_private.as_deref() == Some("on");
+    sqlx::query("UPDATE repositories SET description = $1, is_private = $2, updated_at = now() WHERE id = $3")
+        .bind(&form.description)
+        .bind(is_private)
+        .bind(repository.id)
+        .execute(&state.pool)
+        .await?;
+
+    Ok(Redirect::to(&format!("/{}/{}", params.owner, params.repo)))
 }
