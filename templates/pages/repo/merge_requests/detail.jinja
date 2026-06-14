@@ -1,0 +1,42 @@
+{% extends "pages/repo/layout.jinja" %}
+{% block title %}{{ mr.title }} · MR #{{ mr.number }}{% endblock %}
+{% block repo_content %}
+<h2>{{ mr.title }} <span style="color:var(--color-text-secondary);font-size:18px;">#{{ mr.number }}</span></h2>
+<div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;font-size:14px;">
+    <span class="issue-status {{ mr.state }}">
+        {% if mr.state == 'open' %}&#9675; Open
+        {% elif mr.state == 'merged' %}&#10003; Merged
+        {% else %}&#10005; Closed{% endif %}
+    </span>
+    <span>{{ mr.source_branch }} &rarr; {{ mr.target_branch }}</span>
+    <span class="text-small">created {{ mr.created_at }}</span>
+</div>
+{% if mr.description %}<div class="readme-container"><div class="readme-body">{{ mr.description }}</div></div>{% endif %}
+
+{% if mr.state == 'open' %}
+<div style="margin-top:16px;display:flex;gap:8px;">
+    <form method="post" action="/{{ repo.owner_name }}/{{ repo.name }}/-/merge_requests/{{ mr.number }}/merge" style="display:inline;">
+        <button type="submit" class="btn btn-sm" style="background:var(--color-success);border-color:var(--color-success);color:#fff;">Merge</button>
+    </form>
+    <form method="post" action="/{{ repo.owner_name }}/{{ repo.name }}/-/merge_requests/{{ mr.number }}/close" style="display:inline;">
+        <button type="submit" class="btn btn-sm">Close</button>
+    </form>
+</div>
+{% endif %}
+
+{% if diff_files | length > 0 %}
+<h3 style="margin-top:24px;margin-bottom:12px;">Changes ({{ diff_files | length }} files)</h3>
+{% for df in diff_files %}
+<div class="diff-file">
+    <div class="diff-file-header">{{ df.new_path }} ({{ df.status }})</div>
+    {% for line in df.lines %}
+    <div class="diff-line {{ line.line_type }}">
+        <span class="line-num">{{ line.old_lineno | default("-") }}</span>
+        <span class="line-num">{{ line.new_lineno | default("-") }}</span>
+        <span class="line-content">{{ line.content }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endfor %}
+{% endif %}
+{% endblock %}

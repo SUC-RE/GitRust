@@ -1,0 +1,30 @@
+{% extends "pages/repo/layout.jinja" %}
+{% block title %}New Merge Request — {{ repo.owner_name }}/{{ repo.name }}{% endblock %}
+{% block repo_content %}
+<h2>New Merge Request</h2>
+<form method="post" action="/{{ repo.owner_name }}/{{ repo.name }}/-/merge_requests/new">
+    <div class="form-group">
+        <label for="source_branch">Source Branch</label>
+        <select id="source_branch" name="source_branch" class="form-control" required>
+            <option value="">Select branch...</option>
+            {% for b in branches %}<option value="{{ b }}">{{ b }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="target_branch">Target Branch</label>
+        <select id="target_branch" name="target_branch" class="form-control" required>
+            <option value="">Select branch...</option>
+            {% for b in branches %}<option value="{{ b }}">{{ b }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="description">Description (Markdown supported)</label>
+        <textarea id="description" name="description" class="form-control" style="min-height:160px;"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Create Merge Request</button>
+</form>
+{% endblock %}

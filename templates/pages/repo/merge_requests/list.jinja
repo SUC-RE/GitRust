@@ -1,0 +1,34 @@
+{% extends "pages/repo/layout.jinja" %}
+{% block title %}Merge Requests — {{ repo.owner_name }}/{{ repo.name }}{% endblock %}
+{% block repo_content %}
+<div class="flex-between mb-4">
+    <h2>Merge Requests</h2>
+    <a href="/{{ repo.owner_name }}/{{ repo.name }}/-/merge_requests/new" class="btn btn-primary btn-sm">New MR</a>
+</div>
+<div class="tabs mb-4">
+    <a href="?state=open" class="{% if current_state == 'open' %}active{% endif %}">Open</a>
+    <a href="?state=merged" class="{% if current_state == 'merged' %}active{% endif %}">Merged</a>
+    <a href="?state=closed" class="{% if current_state == 'closed' %}active{% endif %}">Closed</a>
+</div>
+{% if merge_requests | length > 0 %}
+<ul class="issue-list">
+{% for mr in merge_requests %}
+<li class="issue-item">
+    <div class="issue-status {{ mr.state }}">{% if mr.state == 'open' %}&#9675;{% elif mr.state == 'merged' %}&#10003;{% else %}&#10005;{% endif %}</div>
+    <div class="issue-body">
+        <div class="issue-title">
+            <a href="/{{ repo.owner_name }}/{{ repo.name }}/-/merge_requests/{{ mr.number }}">{{ mr.title }}</a>
+        </div>
+        <div class="issue-meta">
+            #{{ mr.number }} by <a href="/{{ mr.author_username }}">{{ mr.author_display_name }}</a>
+            &middot; {{ mr.source_branch }} &rarr; {{ mr.target_branch }} &middot; {{ mr.created_at }}
+        </div>
+    </div>
+</li>
+{% endfor %}
+</ul>
+{% include "partials/pagination.jinja" %}
+{% else %}
+<div class="empty-state"><h3>No merge requests</h3></div>
+{% endif %}
+{% endblock %}

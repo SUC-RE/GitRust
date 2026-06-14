@@ -10,6 +10,7 @@ use tracing_subscriber::EnvFilter;
 
 use gitrust::groups::routes::group_routes;
 use gitrust::issues::routes::issue_routes;
+use gitrust::merge_requests::routes::mr_routes;
 use gitrust::labels::routes::label_routes;
 use gitrust::projects::routes::project_routes;
 use gitrust::repositories::routes::repo_routes;
@@ -48,6 +49,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .merge(project_routes())
         .merge(repo_routes())
         .merge(issue_routes())
+        .merge(mr_routes())
         .merge(label_routes())
         .merge(profile_routes())
         .nest_service("/static", ServeDir::new("static"))
