@@ -1,0 +1,9 @@
+{% extends "layout.jinja" %}
+{% block content %}
+<div class="repo-layout">
+    {% include "partials/sidebar_repo.jinja" %}
+    <div class="repo-content">
+        {% block repo_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

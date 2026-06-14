@@ -1,0 +1,59 @@
+{% extends "pages/repo/layout.jinja" %}
+{% block title %}{{ repo.owner_name }}/{{ repo.name }} — GitRust{% endblock %}
+{% block repo_content %}
+<div class="flex-between mb-4">
+    <div class="branch-selector">
+        <span style="font-size:14px;color:var(--color-text-secondary);">Branch:</span>
+        <select onchange="if(this.value) window.location.href=this.value">
+            {% for b in branches %}
+            <option value="?ref_name={{ b }}" {% if b == default_branch %}selected{% endif %}>{{ b }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <a href="/{{ repo.owner_name }}/{{ repo.name }}/commits" class="btn btn-sm">
+            {{ commit_count }} commits
+        </a>
+    </div>
+</div>
+
+{% if entries | length > 0 %}
+<table class="file-table">
+    <thead>
+        <tr><th>Name</th><th class="file-message" style="max-width:400px;">Last commit</th><th class="file-time">Last update</th></tr>
+    </thead>
+    <tbody>
+    {% for entry in entries %}
+    <tr>
+        <td>
+            <span class="file-icon">
+                {% if entry.entry_type == "directory" %}&#128193;{% else %}&#128196;{% endif %}
+            </span>
+            <span class="{% if entry.entry_type == 'directory' %}file-dir{% else %}file-name{% endif %}">
+                {% if entry.entry_type == "directory" %}
+                <a href="/{{ repo.owner_name }}/{{ repo.name }}/tree?ref_name={{ default_branch }}&path={{ entry.path }}">{{ entry.name }}</a>
+                {% else %}
+                <a href="#">{{ entry.name }}</a>
+                {% endif %}
+            </span>
+        </td>
+        <td class="file-message">—</td>
+        <td class="file-time">—</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="empty-state">
+    <h3>Empty repository</h3>
+    <p>This repository is empty. Clone it and push your first commit.</p>
+</div>
+{% endif %}
+
+{% if readme_html %}
+<div class="readme-container">
+    <div class="readme-header">README.md</div>
+    <div class="readme-body">{{ readme_html | safe }}</div>
+</div>
+{% endif %}
+{% endblock %}

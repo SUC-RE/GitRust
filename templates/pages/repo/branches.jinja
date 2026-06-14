@@ -1,0 +1,17 @@
+{% extends "pages/repo/layout.jinja" %}
+{% block title %}Branches — {{ repo.owner_name }}/{{ repo.name }}{% endblock %}
+{% block repo_content %}
+<h2>Branches</h2>
+{% if branches_list | length > 0 %}
+<table class="file-table">
+    <thead><tr><th>Branch</th></tr></thead>
+    <tbody>
+    {% for b in branches_list %}
+    <tr><td><a href="/{{ repo.owner_name }}/{{ repo.name }}/tree?ref_name={{ b }}">{{ b }}</a></td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="empty-state"><h3>No branches</h3></div>
+{% endif %}
+{% endblock %}

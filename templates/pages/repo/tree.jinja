@@ -1,0 +1,27 @@
+{% extends "pages/repo/layout.jinja" %}
+{% block title %}{{ repo.name }} at {{ current_ref }} — GitRust{% endblock %}
+{% block repo_content %}
+<h2>Files at {{ current_ref }}</h2>
+{% if entries | length > 0 %}
+<table class="file-table">
+    <thead><tr><th>Name</th><th>Size</th></tr></thead>
+    <tbody>
+    {% for entry in entries %}
+    <tr>
+        <td>
+            <span class="file-icon">{% if entry.entry_type == "directory" %}&#128193;{% else %}&#128196;{% endif %}</span>
+            <span class="{% if entry.entry_type == 'directory' %}file-dir{% else %}file-name{% endif %}">
+                {{ entry.name }}
+            </span>
+        </td>
+        <td style="font-size:13px;color:var(--color-text-secondary);">
+            {% if entry.size %}{{ entry.size }} B{% else %}—{% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="empty-state"><h3>No files</h3></div>
+{% endif %}
+{% endblock %}

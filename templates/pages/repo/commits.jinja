@@ -1,0 +1,27 @@
+{% extends "pages/repo/layout.jinja" %}
+{% block title %}Commits — {{ repo.owner_name }}/{{ repo.name }}{% endblock %}
+{% block repo_content %}
+<h2>Commits — {{ current_ref }}</h2>
+{% if commits | length > 0 %}
+{% for c in commits %}
+<div class="commit-item">
+    <div class="commit-avatar" style="display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--color-text-secondary);">
+        {{ c.author_name | first | upper }}
+    </div>
+    <div class="commit-info">
+        <div class="commit-title">
+            <a href="/{{ repo.owner_name }}/{{ repo.name }}/commit/{{ c.sha }}">{{ c.message }}</a>
+        </div>
+        <div class="commit-meta">
+            <a href="/{{ c.author_name }}">{{ c.author_name }}</a>
+            committed <span class="commit-sha">{{ c.short_sha }}</span>
+            {{ c.formatted_time }}
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% include "partials/pagination.jinja" %}
+{% else %}
+<div class="empty-state"><h3>No commits yet</h3></div>
+{% endif %}
+{% endblock %}

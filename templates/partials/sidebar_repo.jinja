@@ -1,0 +1,67 @@
+<div class="repo-sidebar">
+    <div class="repo-sidebar-header">
+        <div class="repo-owner">{{ repo.owner_name }}</div>
+        <div class="repo-name">
+            <a href="/{{ repo.owner_name }}/{{ repo.name }}">{{ repo.name }}</a>
+        </div>
+        {% if repo.description %}
+        <div class="repo-sidebar-desc">{{ repo.description }}</div>
+        {% endif %}
+    </div>
+    <ul class="sidebar-nav">
+        <li><a href="/{{ repo.owner_name }}/{{ repo.name }}" class="{% if sidebar_active == 'files' %}active{% endif %}">
+            <span class="nav-icon">&#128196;</span> Files
+        </a></li>
+        <li><a href="/{{ repo.owner_name }}/{{ repo.name }}/commits" class="{% if sidebar_active == 'commits' %}active{% endif %}">
+            <span class="nav-icon">&#128340;</span> Commits
+            {% if commit_count %}<span class="nav-count">{{ commit_count }}</span>{% endif %}
+        </a></li>
+    </ul>
+    <div class="sidebar-section">
+        <div class="sidebar-section-title">Collaboration</div>
+        <ul class="sidebar-nav">
+            <li><a href="/{{ repo.owner_name }}/{{ repo.name }}/-/issues" class="{% if sidebar_active == 'issues' %}active{% endif %}">
+                <span class="nav-icon">&#9888;</span> Issues
+            </a></li>
+            <li><a href="/{{ repo.owner_name }}/{{ repo.name }}/-/merge_requests" class="{% if sidebar_active == 'merge_requests' %}active{% endif %}">
+                <span class="nav-icon">&#8644;</span> Merge Requests
+            </a></li>
+            <li><a href="/{{ repo.owner_name }}/{{ repo.name }}/-/milestones" class="{% if sidebar_active == 'milestones' %}active{% endif %}">
+                <span class="nav-icon">&#127919;</span> Milestones
+            </a></li>
+            <li><a href="/{{ repo.owner_name }}/{{ repo.name }}/-/labels" class="{% if sidebar_active == 'labels' %}active{% endif %}">
+                <span class="nav-icon">&#127991;</span> Labels
+            </a></li>
+            <li><a href="/{{ repo.owner_name }}/{{ repo.name }}/-/members" class="{% if sidebar_active == 'members' %}active{% endif %}">
+                <span class="nav-icon">&#128101;</span> Members
+            </a></li>
+        </ul>
+    </div>
+    <div class="sidebar-section">
+        <div class="sidebar-section-title">Knowledge</div>
+        <ul class="sidebar-nav">
+            <li><a href="/{{ repo.owner_name }}/{{ repo.name }}/-/wiki" class="{% if sidebar_active == 'wiki' %}active{% endif %}">
+                <span class="nav-icon">&#128214;</span> Wiki
+            </a></li>
+        </ul>
+    </div>
+    <div class="sidebar-section">
+        <div class="sidebar-section-title">Analytics</div>
+        <ul class="sidebar-nav">
+            <li><a href="/{{ repo.owner_name }}/{{ repo.name }}/-/graph" class="{% if sidebar_active == 'graph' %}active{% endif %}">
+                <span class="nav-icon">&#127760;</span> Network Graph
+            </a></li>
+            <li><a href="/{{ repo.owner_name }}/{{ repo.name }}/-/stats" class="{% if sidebar_active == 'stats' %}active{% endif %}">
+                <span class="nav-icon">&#128200;</span> Statistics
+            </a></li>
+        </ul>
+    </div>
+    <div class="sidebar-section">
+        <div class="sidebar-section-title">Settings</div>
+        <ul class="sidebar-nav">
+            <li><a href="/{{ repo.owner_name }}/{{ repo.name }}/-/settings" class="{% if sidebar_active == 'settings' %}active{% endif %}">
+                <span class="nav-icon">&#9881;</span> Settings
+            </a></li>
+        </ul>
+    </div>
+</div>

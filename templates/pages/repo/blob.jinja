@@ -1,0 +1,15 @@
+{% extends "pages/repo/layout.jinja" %}
+{% block title %}{{ file_path }} at {{ current_ref }} — {{ repo.name }}{% endblock %}
+{% block repo_content %}
+<div class="blob-header">
+    <span class="file-path">{{ file_path }}</span>
+    <span class="text-small">{{ file_size }} bytes | {% if language %}{{ language }}{% else %}plain text{% endif %}</span>
+</div>
+<div class="code-block">
+    {% if is_binary %}
+    <p style="color:var(--color-text-secondary);text-align:center;padding:32px;">Binary file not displayed</p>
+    {% else %}
+    <pre>{{ content }}</pre>
+    {% endif %}
+</div>
+{% endblock %}

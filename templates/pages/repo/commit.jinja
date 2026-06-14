@@ -1,0 +1,41 @@
+{% extends "pages/repo/layout.jinja" %}
+{% block title %}Commit {{ commit.short_sha }} — {{ repo.name }}{% endblock %}
+{% block repo_content %}
+<h2>{{ commit.message }}</h2>
+<div style="display:flex;gap:8px;font-size:13px;color:var(--color-text-secondary);margin-bottom:24px;">
+    <span>commit <span style="font-family:var(--font-mono);">{{ commit.sha }}</span></span>
+    {% for parent in commit.parent_shas %}
+    <span>parent <span style="font-family:var(--font-mono);">{{ parent | truncate(length=8, end="") }}</span></span>
+    {% endfor %}
+</div>
+<div style="font-size:14px;margin-bottom:16px;">
+    <strong>{{ commit.author_name }}</strong>
+    <span style="color:var(--color-text-secondary);">{{ commit.timestamp }}</span>
+</div>
+
+{% if commit.files_changed | length > 0 %}
+<div style="margin-bottom:16px;font-size:14px;color:var(--color-text-secondary);">
+    Showing {{ commit.files_changed | length }} changed files
+    {% for f in commit.files_changed %}
+    <span style="color:var(--color-success);margin-left:8px;">+{{ f.additions }}</span>
+    <span style="color:var(--color-danger);">-{{ f.deletions }}</span>
+    <span style="font-family:var(--font-mono);margin-left:8px;">{{ f.filename }}</span><br>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if diff_files | length > 0 %}
+{% for df in diff_files %}
+<div class="diff-file">
+    <div class="diff-file-header">{{ df.new_path }} ({{ df.status }})</div>
+    {% for line in df.lines %}
+    <div class="diff-line {{ line.line_type }}">
+        <span class="line-num">{{ line.old_lineno | default("-") }}</span>
+        <span class="line-num">{{ line.new_lineno | default("-") }}</span>
+        <span class="line-content">{{ line.content }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endfor %}
+{% endif %}
+{% endblock %}
